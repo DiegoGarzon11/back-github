@@ -12,12 +12,14 @@ export class UserService {
       ),
     ]);
 
-    if (!userResponse.ok) {
-      throw new HttpException(
-        `No se encontró el usuario de GitHub: ${username}`,
-        HttpStatus.NOT_FOUND,
-      );
-    }
+if (!userResponse.ok) {
+  console.log('GitHub status:', userResponse.status);
+  console.log('GitHub headers rate limit:', userResponse.headers.get('x-ratelimit-remaining'));
+  throw new HttpException(
+    `Error de GitHub (${userResponse.status}) al buscar: ${username}`,
+    userResponse.status === 404 ? HttpStatus.NOT_FOUND : HttpStatus.BAD_GATEWAY,
+  );
+}
 
     const data = (await userResponse.json()) as GithubUserResponse;
     const repos: GithubRepoResponse[] = reposResponse.ok
